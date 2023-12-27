@@ -13,10 +13,10 @@ from surfactant.sbomtypes import SBOM
 @surfactant.plugin.hookimpl
 def write_sbom(sbom: SBOM, outfile) -> None:
     """Writes the contents of the SBOM to a DOT file.
-
     The write_sbom hook for the dot_writer makes a best-effort attempt
     to map the information gathered from the internal SBOM representation
     to a valid Graphvis Dot file.
+
     Args:
         sbom (SBOM): The SBOM to write to the output file.
         outfile: The output file handle to write the SBOM to.
