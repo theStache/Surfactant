@@ -1,0 +1,4 @@
+GHIDRA=/path/to/GHIDRA
+PROJ = /path/to/project
+DATABASE = /path/to/db_file
+XML_DIR =/path/to/XML_DIR
