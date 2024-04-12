@@ -93,20 +93,20 @@ def extract_pe_info(filename):
             file_details["peMachine"] = pe.FILE_HEADER.Machine
             print("[WARNING] Unknown machine type encountered in PE file header")
     if pe.OPTIONAL_HEADER is not None:
-        file_details[
-            "peOperatingSystemVersion"
-        ] = f"{pe.OPTIONAL_HEADER.MajorOperatingSystemVersion}.{pe.OPTIONAL_HEADER.MinorOperatingSystemVersion}"
-        file_details[
-            "peSubsystemVersion"
-        ] = f"{pe.OPTIONAL_HEADER.MajorSubsystemVersion}.{pe.OPTIONAL_HEADER.MinorSubsystemVersion}"
+        file_details["peOperatingSystemVersion"] = (
+            f"{pe.OPTIONAL_HEADER.MajorOperatingSystemVersion}.{pe.OPTIONAL_HEADER.MinorOperatingSystemVersion}"
+        )
+        file_details["peSubsystemVersion"] = (
+            f"{pe.OPTIONAL_HEADER.MajorSubsystemVersion}.{pe.OPTIONAL_HEADER.MinorSubsystemVersion}"
+        )
         if pe.OPTIONAL_HEADER.Subsystem in pe_subsystem_types:
             file_details["peSubsystem"] = pe_subsystem_types[pe.OPTIONAL_HEADER.Subsystem]
         else:
             file_details["peSubsystem"] = pe.OPTIONAL_HEADER.Subsystem
             print("[WARNING] Unknown Windows Subsystem type encountered in PE file header")
-        file_details[
-            "peLinkerVersion"
-        ] = f"{pe.OPTIONAL_HEADER.MajorLinkerVersion}.{pe.OPTIONAL_HEADER.MinorLinkerVersion}"
+        file_details["peLinkerVersion"] = (
+            f"{pe.OPTIONAL_HEADER.MajorLinkerVersion}.{pe.OPTIONAL_HEADER.MinorLinkerVersion}"
+        )
 
     if import_dir := getattr(pe, "DIRECTORY_ENTRY_IMPORT", None):
         # Imported Symbols
@@ -190,13 +190,19 @@ def extract_pe_info(filename):
 
 
 def add_core_assembly_info(asm_dict, asm_info):
-    asm_dict["Name"] = asm_info.Name
-    asm_dict["Culture"] = asm_info.Culture
-    asm_dict[
-        "Version"
-    ] = f"{asm_info.MajorVersion}.{asm_info.MinorVersion}.{asm_info.BuildNumber}.{asm_info.RevisionNumber}"
+    asm_dict["Name"] = asm_info.Name.value if hasattr(asm_info.Name, "value") else asm_info.Name
+    asm_dict["Culture"] = (
+        asm_info.Culture.value if hasattr(asm_info.Culture, "value") else asm_info.Culture
+    )
+    asm_dict["Version"] = (
+        f"{asm_info.MajorVersion}.{asm_info.MinorVersion}.{asm_info.BuildNumber}.{asm_info.RevisionNumber}"
+    )
     asm_dict["PublicKey"] = (
-        asm_info.PublicKey.hex() if hasattr(asm_info.PublicKey, "hex") else asm_info.PublicKey
+        asm_info.PublicKey.hex()
+        if hasattr(asm_info.PublicKey, "hex")
+        else (
+            asm_info.PublicKey.value if hasattr(asm_info.PublicKey, "value") else asm_info.PublicKey
+        )
     )
 
 
@@ -235,7 +241,11 @@ def get_assembly_info(asm_info):
 def get_assemblyref_info(asmref_info):
     asmref: Dict[str, Any] = {}
     add_core_assembly_info(asmref, asmref_info)
-    asmref["HashValue"] = asmref_info.HashValue.hex()
+    asmref["HashValue"] = (
+        asmref_info.HashValue.hex()
+        if hasattr(asmref_info.HashValue, "hex")
+        else asmref_info.HashValue
+    )
     add_assembly_flags_info(asmref, asmref_info)
     return asmref
 

@@ -87,8 +87,10 @@ def write_sbom(sbom: SBOM, outfile) -> None:
         output_format = cyclonedx.output.OutputFormat.JSON
     elif outformat == "xml":
         output_format = cyclonedx.output.OutputFormat.XML
-    outputter: cyclonedx.output.BaseOutput = cyclonedx.output.get_instance(
-        bom=bom, output_format=output_format
+    # The docs say that you don't need to specify a version (it says it defaults to the latest)
+    # but I got a missing keyword error when doing so, so just specify 1.5 for now
+    outputter: cyclonedx.output.BaseOutput = cyclonedx.output.make_outputter(
+        bom=bom, output_format=output_format, schema_version=cyclonedx.schema.SchemaVersion.V1_5
     )
     outfile.write(outputter.output_as_string())
 
@@ -254,6 +256,12 @@ def create_cyclonedx_file(file_path: str, software: Software) -> Component:
     if cr_text := get_fileinfo_metadata(software, "LegalCopyright"):
         copyright_text = cr_text  # free-form text field extracted from actual file identifying copyright holder and any dates present
 
+    if software.description == "":
+        software.description = None
+
+    if software.version == "":
+        software.version = None
+
     return Component(
         bom_ref=software.UUID,
         name=file_path,
@@ -261,7 +269,7 @@ def create_cyclonedx_file(file_path: str, software: Software) -> Component:
         supplier=supplier,
         description=software.description,
         hashes=hashes,
-        copyright=copyright,
+        copyright=copyright_text,
         # components: Optional[Iterable['Component']]
         type=ComponentType.FILE,
     )
